@@ -34,19 +34,64 @@
 
 ## اجرای محلی
 
-پیش‌نیاز: Node.js 18 یا جدیدتر.
+### پیش‌نیازها
+
+- [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/) نسخه 18 یا جدیدتر
+
+### ۱. کلون‌کردن مخزن
 
 ```bash
-npm install
+git clone https://github.com/ZamaniDeveloper/zamandev-stream.git
+cd zamandev-stream
+```
+
+### ۲. نصب وابستگی‌ها
+
+برای نصب دقیق نسخه‌های ثبت‌شده در `package-lock.json`:
+
+```bash
+npm ci
+```
+
+در صورت تغییر وابستگی‌ها می‌توانید به‌جای آن از `npm install` استفاده کنید.
+
+### ۳. اجرای برنامه
+
+```bash
 npm start
 ```
 
-سپس `http://localhost:3000` را باز کنید. برای آزمایش تماس، برنامه را در دو مرورگر یا دستگاه باز کرده و با Room ID یکسان وارد شوید.
+مرورگر را باز کرده و به `http://localhost:3000` بروید. برای آزمایش تماس، برنامه را در دو مرورگر یا دستگاه باز کنید و با Room ID یکسان وارد شوید.
+
+### حالت توسعه
 
 برای توسعه با راه‌اندازی مجدد خودکار:
 
 ```bash
 npm run dev
+```
+
+### تغییر پورت
+
+پورت پیش‌فرض `3000` است. در PowerShell ویندوز:
+
+```powershell
+$env:PORT=8080
+npm start
+```
+
+در Linux یا macOS:
+
+```bash
+PORT=8080 npm start
+```
+
+### دریافت به‌روزرسانی‌ها
+
+```bash
+git pull
+npm ci
 ```
 
 ## استقرار
@@ -100,19 +145,64 @@ A Persian, right-to-left WebRTC platform for video calls, group conferencing, an
 
 ## Local setup
 
-Requirement: Node.js 18 or newer.
+### Prerequisites
+
+- [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/) 18 or newer
+
+### 1. Clone the repository
 
 ```bash
-npm install
+git clone https://github.com/ZamaniDeveloper/zamandev-stream.git
+cd zamandev-stream
+```
+
+### 2. Install dependencies
+
+Install the exact dependency versions recorded in `package-lock.json`:
+
+```bash
+npm ci
+```
+
+Use `npm install` instead when you intentionally need to update dependencies.
+
+### 3. Start the application
+
+```bash
 npm start
 ```
 
-Open `http://localhost:3000`. To test a call, open the application in two browsers or devices and join with the same Room ID.
+Open `http://localhost:3000` in your browser. To test a call, open the application in two browsers or devices and join with the same Room ID.
+
+### Development mode
 
 For development with automatic restarts:
 
 ```bash
 npm run dev
+```
+
+### Change the port
+
+The default port is `3000`. On Windows PowerShell:
+
+```powershell
+$env:PORT=8080
+npm start
+```
+
+On Linux or macOS:
+
+```bash
+PORT=8080 npm start
+```
+
+### Pull updates
+
+```bash
+git pull
+npm ci
 ```
 
 ## Deployment
