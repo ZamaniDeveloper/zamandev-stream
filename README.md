@@ -1,5 +1,9 @@
 # ZamanDev Stream
 
+[فارسی](#فارسی) | [English](#english)
+
+## فارسی
+
 یک پلتفرم فارسی و راست‌به‌چپ برای تماس تصویری، کنفرانس گروهی و پخش زنده مبتنی بر WebRTC که برای اتصال‌های کم‌سرعت نیز پروفایل‌های اختصاصی دارد.
 
 ## امکانات
@@ -59,5 +63,71 @@ npm run dev
 - برای اتصال پایدار در شبکه‌های محدودشده باید TURN اختصاصی تنظیم شود.
 
 ## مجوز
+
+[MIT](LICENSE) © 2026 Mohsen Zamani
+
+---
+
+## English
+
+A Persian, right-to-left WebRTC platform for video calls, group conferencing, and live streaming, featuring dedicated quality profiles for low-bandwidth connections.
+
+## Features
+
+- Three room modes: one-to-many live streaming, group conferencing, and private one-to-one calls
+- Separate broadcaster and viewer roles in live-stream mode
+- Peer-to-peer audio and video using WebRTC with Socket.IO signaling
+- Four quality profiles: 720p, 480p, 240p, and audio-only
+- Automatic quality reduction when packet loss increases
+- Live monitoring of RTT, packet loss, upload/download speed, and resolution
+- Bitrate limiting and Opus FEC for more resilient audio on weak networks
+- Microphone and camera controls with participant media-state indicators
+- Front and rear camera switching on mobile devices
+- Screen sharing
+- Synchronized whiteboard with pen, eraser, colors, and multiple stroke sizes
+- Live text chat, participant list, and viewer counter
+- Responsive, mobile-friendly Persian RTL interface
+- Installable PWA with interface asset caching
+- Clean `/` and `/room` URLs
+
+## Technology
+
+- Node.js and Express
+- Socket.IO
+- WebRTC
+- Framework-free HTML, CSS, and JavaScript
+- Service Worker and Web App Manifest
+
+## Local setup
+
+Requirement: Node.js 18 or newer.
+
+```bash
+npm install
+npm start
+```
+
+Open `http://localhost:3000`. To test a call, open the application in two browsers or devices and join with the same Room ID.
+
+For development with automatic restarts:
+
+```bash
+npm run dev
+```
+
+## Deployment
+
+Deploy the service over HTTPS. Outside localhost, browser access to the camera, microphone, Service Worker, and screen sharing generally requires a secure context. The server supports the `PORT` environment variable.
+
+The default configuration uses public STUN servers only. For reliable NAT/CGNAT traversal in production, operate your own TURN service and configure it in `public/js/webrtc-helper.js`. TURN credentials embedded in browser code are visible to users, so use short-lived or appropriately restricted credentials.
+
+## Current limitations
+
+- Conference rooms use a mesh architecture; large rooms require an SFU.
+- Authentication, room passwords, message persistence, and session recording are not implemented.
+- Room state is stored in server memory and is cleared when the server restarts.
+- Restricted networks require a dedicated TURN service for reliable connectivity.
+
+## License
 
 [MIT](LICENSE) © 2026 Mohsen Zamani

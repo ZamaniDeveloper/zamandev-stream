@@ -1,7 +1,7 @@
 {
   "name": "zamandev-stream",
   "version": "1.0.0",
-  "description": "Premium WebRTC Live Streaming, Conferencing, and One-to-One Calling App optimized for weak internet connections.",
+  "description": "پلتفرم WebRTC برای پخش زنده و تماس تصویری | Persian WebRTC live streaming and video conferencing platform.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
