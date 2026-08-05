@@ -1,0 +1,27 @@
+{
+  "name": "zamandev-stream",
+  "version": "1.0.0",
+  "description": "Premium WebRTC Live Streaming, Conferencing, and One-to-One Calling App optimized for weak internet connections.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "webrtc",
+    "socket.io",
+    "express",
+    "live-stream",
+    "conference",
+    "video-call"
+  ],
+  "author": "Mohsen Zamani",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}

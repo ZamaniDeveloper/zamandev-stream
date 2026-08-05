@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>اتاق گفت‌وگو - استریم</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- PWA Manifest & Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#09090e">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+</head>
+<body>
+
+  <div class="app-layout" id="appLayout">
+    <!-- Main Stage: Video stream grid and controls -->
+    <div class="main-stage">
+      
+      <!-- Room Header bar -->
+      <div class="room-header">
+        <div class="room-title-section">
+          <span id="roomBadge" class="room-badge">بارگذاری...</span>
+          <h2 id="roomTitle" style="font-size: 1.15rem; font-weight: 700;">اتاق جلسه</h2>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <!-- Sidebar Toggle Button -->
+          <button class="ctrl-btn header-ctrl-btn" id="toggleSidebarBtn" title="منوی گفت‌وگو و حاضرین" style="width: 38px; height: 38px; border-radius: 50%;">
+            <i class="fa-solid fa-comments"></i>
+          </button>
+
+          <!-- Live Viewer Count (Only relevant for stream mode) -->
+          <div class="viewer-count" id="viewerCountContainer" style="display: none;">
+            <span class="pulse-dot"></span>
+            <span id="viewerCount">۱ تماشاچی</span>
+          </div>
+
+          <!-- Dynamic Network Connection Speed Signal -->
+          <div class="network-indicator-bar signal-good" id="networkSpeedIndicator">
+            <span id="networkQualityLabel">کیفیت خوب</span>
+            <div class="signal-bars">
+              <div class="bar bar-1"></div>
+              <div class="bar bar-2"></div>
+              <div class="bar bar-3"></div>
+              <div class="bar bar-4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Quality Tuning Trigger -->
+      <div class="tuning-trigger">
+        <button class="ctrl-btn" id="tuningToggleBtn" title="تنظیمات بهینه‌سازی پهنای باند">
+          <i class="fa-solid fa-sliders text-accent"></i>
+        </button>
+      </div>
+
+      <!-- Floating Connection Quality Tuning Panel -->
+      <div class="tuning-panel glass" id="tuningPanel">
+        <h4 class="tuning-title">پایش و بهینه‌سازی پهنای باند</h4>
+        
+        <!-- Live Peer Stats -->
+        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 5px;">
+          <div class="stat-item">
+            <span class="stat-label">تاخیر شبکه (RTT):</span>
+            <span class="stat-value" id="statLatency">0 ms</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">گم‌شدن پکت‌ها:</span>
+            <span class="stat-value" id="statPacketLoss">0%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">سرعت دانلود:</span>
+            <span class="stat-value" id="statDownload">0 kbps</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">سرعت آپلود:</span>
+            <span class="stat-value" id="statUpload">0 kbps</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">رزولوشن دریافتی:</span>
+            <span class="stat-value" id="statResolution">320x240</span>
+          </div>
+        </div>
+
+        <!-- Connection Profile Switcher -->
+        <div class="tuning-option">
+          <label for="qualityProfileSelect">پروفایل پهنای باند دوربین شما:</label>
+          <select id="qualityProfileSelect" class="tuning-select">
+            <option value="high">کیفیت بالا (High - 720p)</option>
+            <option value="medium">کیفیت متوسط (Medium - 480p)</option>
+            <option value="low">کیفیت اقتصادی (Low - 240p)</option>
+            <option value="audio">فقط صدا (Audio-Only)</option>
+          </select>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+            * تغییر کیفیت دوربین مستقیماً کیفیت خروجی شما را تغییر می‌دهد و حجم مصرفی اینترنت شما را کاهش می‌دهد.
+          </p>
+        </div>
+
+        <!-- Camera Facing Mode Switcher -->
+        <div class="tuning-option" id="cameraFacingOption" style="margin-top: 12px;">
+          <label for="cameraFacingSelect">دوربین فعال شما:</label>
+          <select id="cameraFacingSelect" class="tuning-select">
+            <option value="user">دوربین جلو (Selfie)</option>
+            <option value="environment">دوربین عقب (Rear Camera)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Video Grid Arena -->
+      <div class="video-arena grid-1" id="videoArena">
+        <!-- Videos will be injected here dynamically by app.js -->
+      </div>
+
+      <!-- Collaborative Whiteboard Overlay -->
+      <div id="whiteboardContainer" class="whiteboard-container glass" style="display: none;">
+        <canvas id="whiteboardCanvas"></canvas>
+        <div class="whiteboard-toolbar glass" id="whiteboardToolbar">
+          <!-- Colors -->
+          <div class="toolbar-section colors-section">
+            <div class="color-dot active" style="background-color: #ef4444;" data-color="#ef4444" title="قرمز"></div>
+            <div class="color-dot" style="background-color: #3b82f6;" data-color="#3b82f6" title="آبی"></div>
+            <div class="color-dot" style="background-color: #a855f7;" data-color="#a855f7" title="بنفش"></div>
+            <div class="color-dot" style="background-color: #10b981;" data-color="#10b981" title="سبز"></div>
+            <div class="color-dot" style="background-color: #eab308;" data-color="#eab308" title="زرد"></div>
+            <div class="color-dot" style="background-color: #ffffff;" data-color="#ffffff" title="سفید"></div>
+          </div>
+          <!-- Divider -->
+          <div class="toolbar-divider"></div>
+          <!-- Pen Size -->
+          <div class="toolbar-section size-section">
+            <button class="toolbar-btn active" id="penSizeThin" title="قلم باریک"><span class="dot-size thin"></span></button>
+            <button class="toolbar-btn" id="penSizeMedium" title="قلم متوسط"><span class="dot-size medium"></span></button>
+            <button class="toolbar-btn" id="penSizeThick" title="قلم پهن"><span class="dot-size thick"></span></button>
+          </div>
+          <!-- Divider -->
+          <div class="toolbar-divider"></div>
+          <!-- Tools -->
+          <div class="toolbar-section tool-section">
+            <button class="toolbar-btn active" id="whiteboardToolPen" title="قلم"><i class="fa-solid fa-pen"></i></button>
+            <button class="toolbar-btn" id="whiteboardToolEraser" title="پاک‌کن"><i class="fa-solid fa-eraser"></i></button>
+          </div>
+          <!-- Divider -->
+          <div class="toolbar-divider"></div>
+          <!-- Actions -->
+          <div class="toolbar-section action-section">
+            <button class="toolbar-btn btn-danger" id="whiteboardClearBtn" title="پاکسازی کامل تخته"><i class="fa-solid fa-trash-can"></i></button>
+            <button class="toolbar-btn btn-accent" id="whiteboardCloseBtn" title="بستن تخته رسم"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Controls Dashboard Panel -->
+      <div class="dashboard-controls">
+        <!-- Leave room button -->
+        <div class="controls-group">
+          <button class="btn btn-secondary btn-end-call" id="leaveBtn">
+            <i class="fa-solid fa-phone-slash"></i> خروج از اتاق
+          </button>
+        </div>
+
+        <!-- Audio and Video Toggle controls -->
+        <div class="controls-group">
+          <!-- Mic Toggle -->
+          <button class="ctrl-btn" id="toggleMicBtn" title="قطع/وصل میکروفون">
+            <i class="fa-solid fa-microphone"></i>
+          </button>
+          
+          <!-- Camera Toggle -->
+          <button class="ctrl-btn" id="toggleCamBtn" title="قطع/وصل دوربین">
+            <i class="fa-solid fa-video"></i>
+          </button>
+
+          <!-- Camera Facing Toggle -->
+          <button class="ctrl-btn" id="toggleCameraFacingBtn" title="تعویض دوربین (جلو/عقب)" style="display: none;">
+            <i class="fa-solid fa-camera-rotate"></i>
+          </button>
+
+          <!-- Screen Share Toggle -->
+          <button class="ctrl-btn" id="toggleScreenShareBtn" title="اشتراک‌گذاری صفحه">
+            <i class="fa-solid fa-desktop"></i>
+          </button>
+
+          <!-- Whiteboard Toggle -->
+          <button class="ctrl-btn" id="toggleWhiteboardBtn" title="تخته رسم زنده">
+            <i class="fa-solid fa-palette"></i>
+          </button>
+
+          <!-- Help / Troubleshooting Toggle -->
+          <button class="ctrl-btn" id="helpToggleBtn" title="راهنمای اتصال و رفع مشکل" onclick="openWebRTCHelpModal()" style="border-color: rgba(6, 182, 212, 0.3); color: var(--accent-blue);">
+            <i class="fa-solid fa-circle-question"></i>
+          </button>
+        </div>
+
+        <!-- Left corner status indicators -->
+        <div class="controls-group" style="direction: ltr;">
+          <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: left;">
+            <div id="selfUsernameTag" style="font-weight: 600; color: white;">کاربر</div>
+            <div id="selfRoleTag" style="font-size: 0.75rem; color: var(--text-muted);">نقش</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar Panel: Live Comments & Participants -->
+    <div class="sidebar" id="sidebarPanel">
+      <div class="tabs-header" style="position: relative;">
+        <button class="tab-btn active" id="tabChatBtn">گفت‌وگوی زنده</button>
+        <button class="tab-btn" id="tabPeersBtn">افراد حاضر</button>
+        <button class="sidebar-close-btn" id="closeSidebarBtn" title="بستن منو" style="background: transparent; border: none; color: var(--text-secondary); font-size: 1.25rem; cursor: pointer; padding: 0 15px; display: none;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- 1. Chat Tab Panel -->
+        <div class="tab-panel active" id="panelChat">
+          <div class="chat-messages" id="chatMessages">
+            <!-- Example message -->
+            <div class="chat-bubble-meta" style="align-self: center; font-size: 0.75rem; color: var(--text-muted); margin: 10px 0;">
+              به اتاق خوش آمدید! چت زنده فعال است.
+            </div>
+          </div>
+          
+          <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="پیامی بنویسید..." autocomplete="off">
+            <button class="chat-send-btn" id="chatSendBtn">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Participants Tab Panel -->
+        <div class="tab-panel" id="panelPeers">
+          <div class="participant-list" id="participantList">
+            <!-- Handled dynamically by app.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connection / Error Modal Dialog Overlay -->
+  <div class="modal-overlay" id="roomFullModal" style="display: none;">
+    <div class="modal-content glass">
+      <i class="fa-solid fa-circle-exclamation" style="font-size: 3.5rem; color: var(--danger); margin-bottom: 15px;"></i>
+      <h3>ظرفیت اتاق پر است</h3>
+      <p id="modalErrorMessage">این جلسه در حال حاضر ظرفیت خالی ندارد یا این مکالمه خصوصی دو نفره آغاز شده است.</p>
+      <button class="btn btn-primary" onclick="window.location.href='/'">
+        بازگشت به صفحه اصلی
+      </button>
+    </div>
+  </div>
+
+  <!-- WebRTC Help / Troubleshooting Modal -->
+  <div class="modal-overlay" id="webrtcHelpModal" style="display: none;">
+    <div class="modal-content glass" style="max-width: 500px; text-align: right; direction: rtl; border-color: var(--accent-blue);">
+      <i class="fa-solid fa-circle-question" style="font-size: 3rem; color: var(--accent-blue); margin-bottom: 15px; display: block; text-align: center;"></i>
+      <h3 style="text-align: center; color: var(--accent-blue); margin-bottom: 15px;">راهنمای رفع مشکل عدم دریافت تصویر</h3>
+      
+      <div style="font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); display: flex; flex-direction: column; gap: 12px; max-height: 55vh; overflow-y: auto; padding-left: 5px;">
+        <p>برقراری ارتباط ویدئویی زنده در بستر اینترنت ایران گاهی به دلیل محدودیت‌های شبکه با اختلال مواجه می‌شود. موارد زیر را بررسی کنید:</p>
+        
+        <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-glass);">
+          <strong style="color: var(--warning); display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-shield-halved"></i> ۱. وضعیت فیلترشکن (VPN)</strong>
+          <p style="color: var(--text-secondary); margin-top: 3px;">فیلترشکن‌ها گاهی مانع برقراری تماس مستقیم همتا‌به‌همتا (WebRTC) می‌شوند. اگر فیلترشکن شما روشن است، آن را <strong>خاموش</strong> کرده و صفحه را مجدداً بارگذاری کنید. در مقابل، برخی VPNها ممکن است مسیر پورت‌ها را باز کنند؛ در صورت عدم موفقیت، حالت دیگر را امتحان کنید.</p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-glass);">
+          <strong style="color: var(--warning); display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-wifi"></i> ۲. محدودیت شبکه اپراتور (CGNAT)</strong>
+          <p style="color: var(--text-secondary); margin-top: 3px;">اینترنت‌های همراه (همراه اول و ایرانسل) از دیواره آتش سخت‌گیرانه‌ای استفاده می‌کنند. در صورت امکان، به <strong>اینترنت وای‌فای (Wi-Fi) خانگی</strong> متصل شوید.</p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-glass);">
+          <strong style="color: var(--warning); display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-lock"></i> ۳. دسترسی به دوربین و میکروفون</strong>
+          <p style="color: var(--text-secondary); margin-top: 3px;">بررسی کنید مرورگر دسترسی به دوربین را مسدود نکرده باشد. آیکون قفل کنار آدرس‌بار مرورگر را لمس کرده و دسترسی‌ها را تایید کنید.</p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-glass);">
+          <strong style="color: var(--warning); display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-mobile-screen-button"></i> ۴. نصب وب‌اپلیکیشن (PWA)</strong>
+          <p style="color: var(--text-secondary); margin-top: 3px;">با لمس دکمه «نصب برنامه» در منوی مرورگر یا صفحه اول، وب‌اپلیکیشن را نصب کنید. نسخه PWA دسترسی‌ها و ارتباطات را با پایداری بیشتری نسبت به مرورگر معمولی دریافت می‌کند.</p>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" style="margin-top: 20px; width: 100%; border-color: var(--accent-purple);" onclick="closeWebRTCHelpModal()">
+        بستن راهنما
+      </button>
+    </div>
+  </div>
+
+  <!-- Socket.IO library from server -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- WebRTC Helper class -->
+  <script src="js/webrtc-helper.js"></script>
+  <!-- Main Application core coordinator -->
+  <script src="js/app.js"></script>
+  
+  <!-- Welcome Toast Notification Container -->
+  <div id="welcomeToastContainer" class="welcome-toast-container" style="position: fixed; bottom: 100px; right: 20px; z-index: 2000; pointer-events: none; display: flex; flex-direction: column; gap: 10px; max-width: 320px; direction: rtl; text-align: right;"></div>
+
+  <script>
+    // Register Service Worker for PWA on room page
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('[PWA] Service Worker registered on room page!', reg))
+          .catch(err => console.error('[PWA] Service Worker registration failed!', err));
+      });
+    }
+  </script>
+</body>
+</html>

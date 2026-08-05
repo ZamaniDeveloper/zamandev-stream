@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> پلتفرم لایو استریم و کنفرانس</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- PWA Manifest & Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#09090e">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+</head>
+<body>
+
+  <div class="landing-container glass">
+    <div class="brand">
+      <div class="brand-logo">ZamanDev Stream</div>
+      <p>سیستم لایو استریم و مکالمه پیشرفته، بهینه‌سازی‌شده برای اینترنت‌های ضعیف</p>
+      <div id="pwaInstallContainer" style="display: none; margin-top: 15px;">
+        <button id="pwaInstallBtn" type="button" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 20px; border-color: var(--accent-purple); color: var(--text-primary); cursor: pointer;">
+          <i class="fa-solid fa-download" style="color: var(--accent-blue);"></i> نصب اپلیکیشن روی گوشی (PWA)
+        </button>
+      </div>
+    </div>
+
+    <form id="joinForm">
+      <!-- Username Input -->
+      <div class="form-group">
+        <label for="username"><i class="fa-regular fa-user"></i> نام کاربری شما</label>
+        <input type="text" id="username" class="form-input" placeholder="مثال: علی رضایی" required autocomplete="off">
+      </div>
+
+      <!-- Room ID Input -->
+      <div class="form-group">
+        <label for="roomId"><i class="fa-solid fa-hashtag"></i> شناسه اتاق (Room ID)</label>
+        <input type="text" id="roomId" class="form-input" placeholder="مثال: room-101" required autocomplete="off">
+      </div>
+
+      <!-- Room Type Selector Grid -->
+      <div class="form-group">
+        <label><i class="fa-solid fa-shapes"></i> نوع جلسه</label>
+        <div class="room-type-grid">
+          <div class="type-card active" data-type="stream">
+            <i class="fa-solid fa-tower-broadcast"></i>
+            <span>یک به چند</span>
+          </div>
+          <div class="type-card" data-type="conference">
+            <i class="fa-solid fa-users"></i>
+            <span>کنفرانس گروهی</span>
+          </div>
+          <div class="type-card" data-type="call">
+            <i class="fa-solid fa-phone"></i>
+            <span>تماس دو نفره</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role / Broadcaster option (Shows up when Stream mode is selected) -->
+      <div class="form-group" id="broadcasterOptionGroup" style="display: block;">
+        <label><i class="fa-solid fa-user-gear"></i> نقش شما در پخش لایو</label>
+        <div style="display: flex; gap: 16px; margin-top: 5px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary); font-size: 0.9rem;">
+            <input type="radio" name="streamRole" value="viewer" checked style="accent-color: var(--accent-purple);">
+            من تماشاچی هستم (Viewer)
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary); font-size: 0.9rem;">
+            <input type="radio" name="streamRole" value="broadcaster" style="accent-color: var(--accent-purple);">
+            من استریمر هستم (Broadcaster)
+          </label>
+        </div>
+      </div>
+
+      <!-- Connection Profile Selection (Pre-flight Selection) -->
+      <div class="form-group">
+        <label for="initialProfile"><i class="fa-solid fa-sliders"></i> کیفیت اولیه اتصال (قابل تغییر در داخل اتاق)</label>
+        <select id="initialProfile" class="tuning-select">
+          <option value="medium">کیفیت متوسط (Medium - 480p) - پیش‌فرض</option>
+          <option value="high">کیفیت بالا (High - 720p)</option>
+          <option value="low" selected>کیفیت اقتصادی (Low - 240p) - مخصوص اینترنت ضعیف</option>
+          <option value="audio">فقط صدا (Audio-Only) - فوق اقتصادی</option>
+        </select>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">
+          * در صورت داشتن اینترنت سیم‌کارت با آنتن‌دهی ضعیف یا اینترنت خانگی کند، گزینه <strong>کیفیت اقتصادی</strong> یا <strong>فقط صدا</strong> را انتخاب کنید.
+        </p>
+      </div>
+
+      <!-- Join Action Button -->
+      <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
+        <i class="fa-solid fa-right-to-bracket"></i> ورود به اتاق جلسه
+      </button>
+    </form>
+  </div>
+
+  <script>
+    // Handling local state switching for room-type select cards
+    const typeCards = document.querySelectorAll('.type-card');
+    const broadcasterOptionGroup = document.getElementById('broadcasterOptionGroup');
+    let selectedType = 'stream';
+
+    typeCards.forEach(card => {
+      card.addEventListener('click', () => {
+        typeCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        
+        selectedType = card.getAttribute('data-type');
+        
+        // Only show broadcaster/viewer option if room type is 'stream' (one-to-many)
+        if (selectedType === 'stream') {
+          broadcasterOptionGroup.style.display = 'block';
+        } else {
+          broadcasterOptionGroup.style.display = 'none';
+        }
+      });
+    });
+
+    // Form submission processing -> redirects to room.html with query parameters
+    document.getElementById('joinForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const roomId = document.getElementById('roomId').value.trim();
+      const initialProfile = document.getElementById('initialProfile').value;
+      
+      let isBroadcaster = false;
+      if (selectedType === 'stream') {
+        const role = document.querySelector('input[name="streamRole"]:checked').value;
+        isBroadcaster = (role === 'broadcaster');
+      }
+
+      // Generate a simple unique user ID
+      const userId = 'user_' + Math.random().toString(36).substr(2, 9);
+
+      // Redirect to active streaming/conference room
+      const queryParams = new URLSearchParams({
+        roomId,
+        userId,
+        username,
+        roomType: selectedType,
+        isBroadcaster: isBroadcaster.toString(),
+        profile: initialProfile
+      });
+
+      window.location.href = `room?${queryParams.toString()}`;
+    });
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('[PWA] Service Worker registered!', reg))
+          .catch(err => console.error('[PWA] Service Worker registration failed!', err));
+      });
+    }
+
+    // Handle PWA Installation prompt
+    let deferredPrompt;
+    const pwaInstallContainer = document.getElementById('pwaInstallContainer');
+    const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      pwaInstallContainer.style.display = 'block';
+    });
+
+    pwaInstallBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`[PWA] User response to install prompt: ${outcome}`);
+      deferredPrompt = null;
+      pwaInstallContainer.style.display = 'none';
+    });
+
+    window.addEventListener('appinstalled', (evt) => {
+      console.log('[PWA] Application installed successfully!');
+      pwaInstallContainer.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
