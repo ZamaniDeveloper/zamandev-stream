@@ -18,8 +18,8 @@
   "author": "Mohsen Zamani",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.19.2",
-    "socket.io": "^4.7.5"
+    "express": "^5.2.1",
+    "socket.io": "^4.8.4"
   },
   "devDependencies": {
     "nodemon": "^3.1.3"
